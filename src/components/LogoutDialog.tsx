@@ -81,7 +81,7 @@ export function LogoutDialog({ open, onOpenChange }: LogoutDialogProps) {
   if (state === "confirm") {
     return (
       <AlertDialog open={open} onOpenChange={onOpenChange}>
-        <AlertDialogContent className="max-w-sm mx-4">
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-center">Log out?</AlertDialogTitle>
             <AlertDialogDescription className="text-center">
@@ -112,7 +112,7 @@ export function LogoutDialog({ open, onOpenChange }: LogoutDialogProps) {
   if (state === "loading") {
     return (
       <AlertDialog open={open} onOpenChange={() => {}}>
-        <AlertDialogContent className="max-w-sm mx-4">
+        <AlertDialogContent className="max-w-md">
           <div className="flex flex-col items-center justify-center py-8 gap-4">
             <Loader2 className="w-10 h-10 text-primary animate-spin" />
             <div className="text-center">
@@ -131,7 +131,7 @@ export function LogoutDialog({ open, onOpenChange }: LogoutDialogProps) {
   if (state === "error") {
     return (
       <AlertDialog open={open} onOpenChange={() => {}}>
-        <AlertDialogContent className="max-w-sm mx-4">
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader className="items-center">
             <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mb-2">
               <WifiOff className="w-7 h-7 text-destructive" />
@@ -160,7 +160,7 @@ export function LogoutDialog({ open, onOpenChange }: LogoutDialogProps) {
   if (state === "expired") {
     return (
       <AlertDialog open={open} onOpenChange={() => {}}>
-        <AlertDialogContent className="max-w-sm mx-4">
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader className="items-center">
             <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-2">
               <LogOut className="w-7 h-7 text-muted-foreground" />
