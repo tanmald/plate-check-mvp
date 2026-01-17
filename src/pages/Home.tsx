@@ -5,34 +5,26 @@ import { Progress } from "@/components/ui/progress";
 import { AdherenceScore, getScoreStatus } from "@/components/AdherenceScore";
 import { MealCard } from "@/components/MealCard";
 import { BottomNav } from "@/components/BottomNav";
-import { Flame, TrendingUp, Calendar, Camera, Info } from "lucide-react";
-
-const mockMeals = [
-  {
-    id: "1",
-    type: "breakfast" as const,
-    name: "Oatmeal with berries",
-    time: "8:30 AM",
-    score: 92,
-    foods: ["Oats", "Blueberries", "Almonds", "Honey"],
-    feedback: "Perfect match with your breakfast template!",
-  },
-  {
-    id: "2",
-    type: "lunch" as const,
-    name: "Grilled chicken salad",
-    time: "12:45 PM",
-    score: 78,
-    foods: ["Chicken breast", "Mixed greens", "Tomatoes", "Caesar dressing"],
-    feedback: "Good protein choice. Consider olive oil instead of Caesar.",
-  },
-];
+import { useAuth } from "@/hooks/use-auth";
+import { useTodayMeals } from "@/hooks/use-meals";
+import { useNutritionPlan } from "@/hooks/use-nutrition-plan";
+import { useDailyProgress } from "@/hooks/use-progress";
+import { Flame, TrendingUp, Calendar, Camera, Info, Loader2 } from "lucide-react";
 
 export default function Home() {
-  const dailyScore = 85;
-  const streak = 7;
-  const weeklyAverage = 82;
-  const hasPlan = true;
+  const { user } = useAuth();
+  const { data: meals = [], isLoading: mealsLoading } = useTodayMeals();
+  const { data: planData, isLoading: planLoading } = useNutritionPlan();
+  const { data: dailyStats, isLoading: statsLoading } = useDailyProgress();
+
+  const hasPlan = planData?.hasPlan || false;
+  const dailyScore = dailyStats?.dailyScore || 0;
+  const streak = dailyStats?.streak || 0;
+  const weeklyAverage = dailyStats?.weeklyAverage || 0;
+  const mealsLogged = dailyStats?.mealsLogged || 0;
+  const totalMeals = dailyStats?.totalMeals || 4;
+
+  const isLoading = mealsLoading || planLoading || statsLoading;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -42,7 +34,9 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Good afternoon,</p>
-              <h1 className="text-2xl font-bold text-foreground">Sarah</h1>
+              <h1 className="text-2xl font-bold text-foreground">
+                {user?.email?.split('@')[0] || 'User'}
+              </h1>
             </div>
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <span className="text-lg">👋</span>
@@ -52,7 +46,11 @@ export default function Home() {
       </header>
 
       <main className="px-4 py-6 space-y-6 max-w-lg mx-auto">
-        {!hasPlan ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          </div>
+        ) : !hasPlan ? (
           /* Empty State - No plan */
           <Card className="card-shadow">
             <CardContent className="p-8 text-center">
@@ -104,9 +102,9 @@ export default function Home() {
                 <div className="p-4 border-t border-border">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">Meals logged today</span>
-                    <span className="text-sm text-muted-foreground">2 of 4</span>
+                    <span className="text-sm text-muted-foreground">{mealsLogged} of {totalMeals}</span>
                   </div>
-                  <Progress value={50} status={getScoreStatus(75)} />
+                  <Progress value={(mealsLogged / totalMeals) * 100} status={getScoreStatus(dailyScore)} />
                 </div>
               </CardContent>
             </Card>
@@ -120,19 +118,21 @@ export default function Home() {
             </Button>
 
             {/* Today's Meals */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Today's Meals</h2>
-                <Link to="/progress" className="text-sm text-primary font-medium">View all</Link>
+            {meals.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Today's Meals</h2>
+                  <Link to="/progress" className="text-sm text-primary font-medium">View all</Link>
+                </div>
+                <div className="space-y-3">
+                  {meals.map((meal) => (
+                    <Link key={meal.id} to="/meal-result" state={{ mealType: meal.type }}>
+                      <MealCard meal={meal} />
+                    </Link>
+                  ))}
+                </div>
               </div>
-              <div className="space-y-3">
-                {mockMeals.map((meal) => (
-                  <Link key={meal.id} to="/meal-result" state={{ mealType: meal.type }}>
-                    <MealCard meal={meal} />
-                  </Link>
-                ))}
-              </div>
-            </div>
+            )}
 
             {/* Next meal suggestion */}
             <Card className="card-shadow border-l-4 border-l-accent">

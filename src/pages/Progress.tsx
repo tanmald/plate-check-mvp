@@ -6,54 +6,21 @@ import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { WeeklyChart } from "@/components/WeeklyChart";
 import { MealCard } from "@/components/MealCard";
+import { useTodayMeals } from "@/hooks/use-meals";
+import { useDailyProgress, useWeeklyProgress } from "@/hooks/use-progress";
 import { toast } from "sonner";
-import { TrendingUp, TrendingDown, Target, AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, Info, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const weeklyData = [
-  { day: "Monday", shortDay: "Mon", score: 88, mealsLogged: 4 },
-  { day: "Tuesday", shortDay: "Tue", score: 75, mealsLogged: 4 },
-  { day: "Wednesday", shortDay: "Wed", score: 92, mealsLogged: 4 },
-  { day: "Thursday", shortDay: "Thu", score: 68, mealsLogged: 3 },
-  { day: "Friday", shortDay: "Fri", score: 45, mealsLogged: 2 },
-  { day: "Saturday", shortDay: "Sat", score: 82, mealsLogged: 4 },
-  { day: "Sunday", shortDay: "Sun", score: 85, mealsLogged: 3, isToday: true },
-];
-
-const todayMeals = [
-  {
-    id: "1",
-    type: "breakfast" as const,
-    name: "Oatmeal with berries",
-    time: "8:30 AM",
-    score: 92,
-    foods: ["Oats", "Blueberries", "Almonds"],
-    feedback: "Perfect match!",
-  },
-  {
-    id: "2",
-    type: "lunch" as const,
-    name: "Grilled chicken salad",
-    time: "12:45 PM",
-    score: 78,
-    foods: ["Chicken", "Greens", "Tomatoes"],
-    feedback: "Good protein choice.",
-  },
-  {
-    id: "3",
-    type: "snack" as const,
-    name: "Greek yogurt",
-    time: "3:30 PM",
-    score: 88,
-    foods: ["Greek yogurt", "Granola"],
-    feedback: "Great snack!",
-  },
-];
 
 export default function Progress() {
   const [activeTab, setActiveTab] = useState<"daily" | "weekly">("daily");
+  const { data: todayMeals = [], isLoading: mealsLoading } = useTodayMeals();
+  const { data: dailyStats, isLoading: dailyLoading } = useDailyProgress();
+  const { data: weeklyData = [], isLoading: weeklyLoading } = useWeeklyProgress();
 
-  const weeklyAverage = Math.round(weeklyData.reduce((acc, d) => acc + d.score, 0) / weeklyData.length);
+  const isLoading = mealsLoading || dailyLoading || weeklyLoading;
+
+  const weeklyAverage = Math.round(weeklyData.reduce((acc, d) => acc + d.score, 0) / (weeklyData.length || 1));
   const onPlanDays = weeklyData.filter(d => d.score >= 60).length;
   const offPlanPercentage = Math.round(((7 - onPlanDays) / 7) * 100);
   const lastWeekAverage = 78;
@@ -106,7 +73,11 @@ export default function Progress() {
       </div>
 
       <main className="px-4 py-6 space-y-6 max-w-lg mx-auto">
-        {activeTab === "daily" && (
+        {isLoading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          </div>
+        ) : activeTab === "daily" ? (
           <>
             {/* Date Navigator */}
             <div className="flex items-center justify-between">
@@ -126,10 +97,19 @@ export default function Progress() {
             <Card className="card-shadow">
               <CardContent className="p-6 text-center">
                 <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                  <span className="text-3xl font-bold text-primary">85%</span>
+                  <span className="text-3xl font-bold text-primary">{dailyStats?.dailyScore || 0}%</span>
                 </div>
-                <p className="text-lg font-semibold text-success">On plan</p>
-                <p className="text-sm text-muted-foreground">3 of 4 meals logged</p>
+                <p className={cn(
+                  "text-lg font-semibold",
+                  (dailyStats?.dailyScore || 0) >= 70 ? "text-success" :
+                  (dailyStats?.dailyScore || 0) >= 40 ? "text-warning" : "text-destructive"
+                )}>
+                  {(dailyStats?.dailyScore || 0) >= 70 ? "On plan" :
+                   (dailyStats?.dailyScore || 0) >= 40 ? "Needs attention" : "Off plan"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {dailyStats?.mealsLogged || 0} of {dailyStats?.totalMeals || 4} meals logged
+                </p>
               </CardContent>
             </Card>
 
@@ -183,9 +163,7 @@ export default function Progress() {
               </CardContent>
             </Card>
           </>
-        )}
-
-        {activeTab === "weekly" && (
+        ) : activeTab === "weekly" ? (
           <>
             {/* Week Navigator */}
             <div className="flex items-center justify-between">
@@ -300,13 +278,15 @@ export default function Progress() {
               </CardContent>
             </Card>
           </>
-        )}
+        ) : null}
 
         {/* Trust note */}
-        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <Info className="w-3 h-3" />
-          <span>Wellness support, not medical advice</span>
-        </div>
+        {!isLoading && (
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <Info className="w-3 h-3" />
+            <span>Wellness support, not medical advice</span>
+          </div>
+        )}
       </main>
 
       <BottomNav />

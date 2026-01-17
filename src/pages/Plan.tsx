@@ -2,66 +2,20 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
+import { useNutritionPlan } from "@/hooks/use-nutrition-plan";
 import { toast } from "sonner";
 import { Upload, FileText, ChevronRight, Plus, Edit2, Image, File, Info, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const mockPlan = {
-  name: "Weight Management Plan",
-  uploadedAt: "Dec 28, 2025",
-  source: "Dr. Smith Nutrition Clinic",
-  templates: [
-    {
-      id: "1",
-      type: "breakfast",
-      icon: "🌅",
-      name: "Breakfast",
-      requiredFoods: ["Whole grains", "Protein source", "Fruit"],
-      allowedFoods: ["Oatmeal", "Eggs", "Greek yogurt", "Berries", "Whole wheat toast"],
-      calories: "350-450",
-      protein: "20-30g",
-    },
-    {
-      id: "2",
-      type: "lunch",
-      icon: "☀️",
-      name: "Lunch",
-      requiredFoods: ["Lean protein", "Vegetables", "Complex carbs"],
-      allowedFoods: ["Chicken", "Fish", "Salad greens", "Quinoa", "Brown rice"],
-      calories: "450-550",
-      protein: "30-40g",
-    },
-    {
-      id: "3",
-      type: "dinner",
-      icon: "🌙",
-      name: "Dinner",
-      requiredFoods: ["Lean protein", "Vegetables"],
-      allowedFoods: ["Salmon", "Chicken", "Tofu", "Broccoli", "Spinach"],
-      calories: "400-500",
-      protein: "25-35g",
-    },
-    {
-      id: "4",
-      type: "snack",
-      icon: "🍎",
-      name: "Snacks",
-      requiredFoods: ["Protein or fruit"],
-      allowedFoods: ["Greek yogurt", "Nuts", "Apple", "Protein bar"],
-      calories: "150-200",
-      protein: "10-15g",
-    },
-  ],
-};
-
 type ViewState = "empty" | "importing" | "review" | "active";
 
 export default function Plan() {
+  const { data: planData, isLoading } = useNutritionPlan();
   const [viewState, setViewState] = useState<ViewState>("empty");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  
-  // For demo, we'll use a toggle to show different states
-  const [hasPlan, setHasPlan] = useState(true);
+
+  const hasPlan = planData?.hasPlan || false;
+  const plan = planData?.plan;
 
   const handleImportStart = () => {
     setViewState("importing");
@@ -73,7 +27,6 @@ export default function Plan() {
 
   const handleConfirmPlan = () => {
     setViewState("active");
-    setHasPlan(true);
   };
 
   const handleEditPlan = () => {
@@ -101,8 +54,12 @@ export default function Plan() {
       </header>
 
       <main className="px-4 py-6 space-y-6 max-w-lg mx-auto">
-        {/* Empty State */}
-        {!hasPlan && viewState === "empty" && (
+        {isLoading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          </div>
+        ) : !hasPlan && viewState === "empty" ? (
+          /* Empty State */
           <Card className="card-shadow">
             <CardContent className="p-8 text-center">
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -112,13 +69,13 @@ export default function Plan() {
               <p className="text-muted-foreground text-sm mb-6">
                 Upload your nutrition plan (PDF, Word, or image) and we'll parse it into meal templates.
               </p>
-              
+
               <div className="space-y-3">
                 <Button size="lg" className="w-full" onClick={handleImportStart}>
                   <Upload className="w-5 h-5 mr-2" />
                   Upload Plan
                 </Button>
-                
+
                 <div className="flex gap-2 justify-center">
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <File className="w-3 h-3" /> PDF
@@ -133,10 +90,8 @@ export default function Plan() {
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {/* Importing State */}
-        {viewState === "importing" && (
+        ) : viewState === "importing" ? (
+          /* Importing State */
           <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
             <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
               <Loader2 className="w-12 h-12 text-primary animate-spin" />
@@ -146,10 +101,8 @@ export default function Plan() {
               <p className="text-muted-foreground">Extracting meal templates and guidelines</p>
             </div>
           </div>
-        )}
-
-        {/* Review State */}
-        {viewState === "review" && (
+        ) : viewState === "review" ? (
+          /* Review State */
           <>
             <Card className="card-shadow border-2 border-primary/20 bg-primary/5">
               <CardContent className="p-4">
@@ -164,15 +117,15 @@ export default function Plan() {
                 </div>
                 
                 <div className="p-3 bg-card rounded-lg">
-                  <p className="text-sm font-medium">{mockPlan.name}</p>
-                  <p className="text-xs text-muted-foreground">{mockPlan.source}</p>
+                  <p className="text-sm font-medium">{plan?.name || "Nutrition Plan"}</p>
+                  <p className="text-xs text-muted-foreground">{plan?.source || "Uploaded Plan"}</p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Templates to confirm */}
             <div className="space-y-3">
-              {mockPlan.templates.map((template) => (
+              {(plan?.templates || []).map((template) => (
                 <Card key={template.id} className="card-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
@@ -196,10 +149,8 @@ export default function Plan() {
               Confirm Plan
             </Button>
           </>
-        )}
-
-        {/* Active Plan State */}
-        {hasPlan && viewState !== "importing" && viewState !== "review" && (
+        ) : hasPlan && plan ? (
+          /* Active Plan State */
           <>
             {/* Current Plan Info */}
             <Card className="card-shadow">
@@ -210,9 +161,9 @@ export default function Plan() {
                       <FileText className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">{mockPlan.name}</h3>
-                      <p className="text-sm text-muted-foreground">{mockPlan.source}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Uploaded {mockPlan.uploadedAt}</p>
+                      <h3 className="font-semibold">{plan.name}</h3>
+                      <p className="text-sm text-muted-foreground">{plan.source}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Uploaded {plan.uploadedAt}</p>
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" onClick={handleEditPlan}>
@@ -233,7 +184,7 @@ export default function Plan() {
               </div>
 
               <div className="space-y-3">
-                {mockPlan.templates.map((template) => (
+                {plan.templates.map((template) => (
                   <Card 
                     key={template.id} 
                     className={cn(
@@ -325,11 +276,11 @@ export default function Plan() {
             </Card>
 
             {/* Upload New Plan */}
-            <Button 
-              variant="outline" 
-              size="lg" 
+            <Button
+              variant="outline"
+              size="lg"
               className="w-full"
-              onClick={() => { setHasPlan(false); setViewState("empty"); }}
+              onClick={() => setViewState("empty")}
             >
               <Upload className="w-5 h-5 mr-2" />
               Replace Plan
@@ -341,7 +292,7 @@ export default function Plan() {
               <span>Wellness support, not medical advice</span>
             </div>
           </>
-        )}
+        ) : null}
       </main>
 
       <BottomNav />
