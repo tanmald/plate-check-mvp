@@ -5,13 +5,14 @@ PlateCheck now supports both test users with mock data and real users with datab
 ## Test User
 
 **Email:** `test@platecheck.app` (or any email ending with `@test.platecheck.app`)
+**Password:** Any password you want (validation is bypassed for test users)
 
 ### How to Use
 
-1. Sign up with the test email: `test@platecheck.app`
-2. Use any password (min 8 characters, 1 uppercase, 1 number)
-3. The app will automatically detect this is a test user
-4. You'll see 100% mock data:
+1. **Sign up OR Sign in** with the test email: `test@platecheck.app`
+2. Enter any password (no requirements - test users bypass authentication)
+3. The app will automatically detect this is a test user and create a mock session
+4. You'll immediately see 100% mock data (no email confirmation needed):
    - Pre-populated meal logs
    - Sample nutrition plan with 4 meal templates
    - Weekly progress data
@@ -23,6 +24,14 @@ PlateCheck now supports both test users with mock data and real users with datab
 - **Nutrition Plan:** "Weight Management Plan" with templates for breakfast, lunch, dinner, snacks
 - **Progress:** 7 days of mock weekly data
 - **Scores:** Sample adherence scores and streaks
+
+### Important Notes
+
+- Test users **bypass all authentication** - no real account is created in Supabase
+- The session is stored in `localStorage` and persists across page refreshes
+- You can "sign up" or "sign in" with test email - both work the same way
+- Password doesn't matter for test users (enter anything)
+- Test user data is **never saved** - it's all in-memory mock data
 
 ## Real User (Your Account)
 
