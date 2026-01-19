@@ -50,6 +50,7 @@ PlateCheck now supports both test users with mock data and real users with datab
 ### What's Connected to Database
 
 ✅ **Implemented:**
+- User profiles (`user_profiles` table)
 - Meal logs (`meal_logs` table)
 - Nutrition plans (`nutrition_plans` table)
 - Meal templates (`meal_templates` table)

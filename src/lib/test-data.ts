@@ -120,3 +120,12 @@ export const mockMealResult = {
     { food: "Caesar dressing", replacement: "Olive oil & lemon", reason: "Lower sodium, fits plan" },
   ],
 };
+
+export const mockProfile = {
+  id: "test-user-id",
+  email: TEST_USER_EMAIL,
+  full_name: "Test User",
+  avatar_url: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};

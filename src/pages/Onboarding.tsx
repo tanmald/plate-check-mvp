@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,7 @@ interface FormErrors {
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { signUp, signIn, resetPassword } = useAuth();
+  const { user, signUp, signIn, resetPassword } = useAuth();
   const [step, setStep] = useState<Step>("value1");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,6 +48,13 @@ export default function Onboarding() {
   const onboardingSteps: OnboardingStep[] = ["value1", "value2", "value3"];
   const currentOnboardingIndex = onboardingSteps.indexOf(step as OnboardingStep);
   const isOnboardingStep = currentOnboardingIndex !== -1;
+
+  // Redirect authenticated users to home
+  useEffect(() => {
+    if (user) {
+      navigate("/", { replace: true });
+    }
+  }, [user, navigate]);
 
   const validateEmail = (email: string): string | undefined => {
     if (!email) return "Email is required";

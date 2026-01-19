@@ -1,6 +1,7 @@
 import { useAuth as useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
+import { isTestUser, mockProfile } from '@/lib/test-data';
 
 /**
  * Re-export useAuth from context for convenience
@@ -23,6 +24,14 @@ export function useUserProfile() {
       return;
     }
 
+    // Return mock data for test users
+    if (isTestUser(user.email)) {
+      setProfile(mockProfile);
+      setLoading(false);
+      return;
+    }
+
+    // Fetch real data from database
     async function fetchProfile() {
       try {
         const { data, error } = await supabase
@@ -55,6 +64,14 @@ export function useUpdateProfile() {
   const updateProfile = async (updates: { email?: string; full_name?: string }) => {
     if (!user) throw new Error('No user logged in');
 
+    // For test users, just simulate success without persisting
+    if (isTestUser(user.email)) {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return;
+    }
+
+    // For real users, update the database
     const { error } = await supabase
       .from('user_profiles')
       .upsert({

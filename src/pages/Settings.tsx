@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth, useUserProfile } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -24,6 +24,7 @@ import {
 export default function Settings() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { profile } = useUserProfile();
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
@@ -136,7 +137,7 @@ export default function Settings() {
                 <User className="w-8 h-8 text-primary" />
               </div>
               <div className="flex-1">
-                <h2 className="font-semibold text-lg">{user?.email?.split('@')[0] || 'User'}</h2>
+                <h2 className="font-semibold text-lg">{profile?.full_name || user?.email?.split('@')[0] || 'User'}</h2>
                 <p className="text-sm text-muted-foreground">{user?.email || 'No email'}</p>
               </div>
             </div>

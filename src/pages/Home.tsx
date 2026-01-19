@@ -5,14 +5,23 @@ import { Progress } from "@/components/ui/progress";
 import { AdherenceScore, getScoreStatus } from "@/components/AdherenceScore";
 import { MealCard } from "@/components/MealCard";
 import { BottomNav } from "@/components/BottomNav";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth, useUserProfile } from "@/hooks/use-auth";
 import { useTodayMeals } from "@/hooks/use-meals";
 import { useNutritionPlan } from "@/hooks/use-nutrition-plan";
 import { useDailyProgress } from "@/hooks/use-progress";
 import { Flame, TrendingUp, Calendar, Camera, Info, Loader2 } from "lucide-react";
 
+// Get time-based greeting
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return "Good morning";
+  if (hour >= 12 && hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function Home() {
   const { user } = useAuth();
+  const { profile } = useUserProfile();
   const { data: meals = [], isLoading: mealsLoading } = useTodayMeals();
   const { data: planData, isLoading: planLoading } = useNutritionPlan();
   const { data: dailyStats, isLoading: statsLoading } = useDailyProgress();
@@ -33,9 +42,9 @@ export default function Home() {
         <div className="px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Good afternoon,</p>
+              <p className="text-sm text-muted-foreground">{getGreeting()},</p>
               <h1 className="text-2xl font-bold text-foreground">
-                {user?.email?.split('@')[0] || 'User'}
+                {profile?.full_name || user?.email?.split('@')[0] || 'User'}
               </h1>
             </div>
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
